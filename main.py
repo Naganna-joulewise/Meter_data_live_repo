@@ -47,4 +47,6 @@ async def start_background():
 
 @app.get("/live-meter-data")
 def get_latest_data():
-    return latest_data
+    mydata=[]
+    mydata.append(latest_data)
+    return mydata
