@@ -6,19 +6,30 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import os
 from typing import List, Dict
+from urllib.parse import quote_plus  # Add this import
+
+
 
 app = FastAPI()
 
+
+username = quote_plus("kethavaram")  # Encode username
+password = quote_plus("Naganna890@")  # Encode password
+cluster_url = "cluster0.gtaowbx.mongodb.net/"
+db_name = "meter_data"
+
+MONGO_URI = f"mongodb+srv://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority"
 # MongoDB configuration
-MONGO_URI = os.getenv("MONGODB_URI", "mongodb+srv://kethavaram:Naganna890@@cluster0.gtaowbx.mongodb.net/")
-DB_NAME = "meter_data"
+# MONGO_URI = os.getenv("MONGODB_URI", "mongodb+srv://kethavaram:Naganna890@@cluster0.gtaowbx.mongodb.net/")
+# DB_NAME = "meter_data"
 COLLECTION_NAME = "daily_readings"
 
 # Initialize MongoDB client
+# Initialize MongoDB client
 try:
     client = MongoClient(MONGO_URI)
-    db = client[DB_NAME]
-    collection = db[COLLECTION_NAME]
+    db = client[db_name]
+    collection = db["COLLECTION_NAME"]
     client.admin.command('ping')  # Test connection
     print("Successfully connected to MongoDB!")
 except ConnectionFailure as e:
