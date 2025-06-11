@@ -45,7 +45,7 @@ async def generate_data_forever():
     global kvah_counter, latest_data, current_day_data, current_day
 
     while True:
-        wait_seconds = random.randint(60, 600)  # 1 to 10 minutes
+        wait_seconds = random.randint(60, 60)  # 1 to 10 minutes
         await asyncio.sleep(wait_seconds)
 
         current_time = datetime.utcnow()
