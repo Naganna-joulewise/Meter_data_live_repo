@@ -15,7 +15,7 @@ app = FastAPI()
 
 username = quote_plus("kethavaram")  # Encode username
 password = quote_plus("Naganna890@")  # Encode password
-cluster_url = "cluster0.gtaowbx.mongodb.net/"
+cluster_url = "cluster0.gtaowbx.mongodb.net"
 db_name = "meter_data"
 
 MONGO_URI = f"mongodb+srv://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority"
