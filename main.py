@@ -21,8 +21,12 @@ from urllib.parse import quote_plus
 username = quote_plus("kethavaram")  # if it has special characters
 password = quote_plus("Naganna890@")  # safely encode special characters
 
-uri = f"mongodb+srv://{username}:{password}@cluster0.gtaowbx.mongodb.net/"
-client = MongoClient(uri, tls=True, tlsCAFile=certifi.where())
+client=MongoClient("mongodb+srv://kethavaram:Naganna890@cluster0.qhaksm0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+# db=client["Phone_Price"]
+# data=db["user_Data"]
+
+# uri = f"mongodb+srv://{username}:{password}@cluster0.gtaowbx.mongodb.net/"
+# client = MongoClient(uri, tls=True, tlsCAFile=certifi.where())
 
 db_name = client["meter_data"]
 collection = db_name["daily_readings"]
