@@ -103,10 +103,21 @@ async def get_latest_data():
     """Returns the latest meter reading"""
     return latest_data
 
-@app.get("/today-data")
+@app.get("/")
 async def get_today_data():
     """Returns all readings from the current day"""
-    collection.insert_one(current_day_data)
+    # If you want to store today's data when this endpoint is called:
+    if current_day_data:
+        try:
+            collection.insert_one({
+                "date": current_day.strftime("%Y-%m-%d"),
+                "readings": current_day_data,
+                "total_kvah": kvah_counter
+            })
+            print(f"Stored {len(current_day_data)} readings for {current_day}")
+        except Exception as e:
+            print("Failed to store data in MongoDB:", e)
+    
     return {
         "date": current_day.strftime("%Y-%m-%d"),
         "readings": current_day_data,
