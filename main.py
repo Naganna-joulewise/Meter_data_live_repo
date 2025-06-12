@@ -6,9 +6,8 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, PyMongoError
 import os
 from typing import List, Dict, Optional
-from urllib.parse import quote_plus
-import certifi
-import ssl
+
+
 
 app = FastAPI()
 
