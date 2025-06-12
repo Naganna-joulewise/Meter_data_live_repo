@@ -31,7 +31,7 @@ try:
         serverSelectionTimeoutMS=30000
     )
     db = client[db_name]
-    collection = db[COLLECTION_NAME]
+    collection = db["daily_readings"]
     # Test the connection
     client.admin.command('ping')
     print("Successfully connected to MongoDB!")
