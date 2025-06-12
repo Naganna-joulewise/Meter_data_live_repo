@@ -7,30 +7,23 @@ from pymongo.errors import ConnectionFailure, PyMongoError
 import os
 from typing import List, Dict, Optional
 import certifi
-
-
+from urllib.parse import quote_plus
 
 app = FastAPI()
 
 # MongoDB configuration
-# username = quote_plus("kethavaram")
-# password = quote_plus("Naganna890@")
-# cluster_url = "cluster0.gtaowbx.mongodb.net"
-from urllib.parse import quote_plus
+username = quote_plus("kethavaram")
+password = quote_plus("Naganna890@")
 
-username = quote_plus("kethavaram")  # if it has special characters
-password = quote_plus("Naganna890@")  # safely encode special characters
-
-client=MongoClient("mongodb+srv://kethavaram:Naganna890@@cluster0.qhaksm0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-# db=client["Phone_Price"]
-# data=db["user_Data"]
-
-# uri = f"mongodb+srv://{username}:{password}@cluster0.gtaowbx.mongodb.net/"
-# client = MongoClient(uri, tls=True, tlsCAFile=certifi.where())
+# Correct MongoDB connection string
+client = MongoClient(
+    f"mongodb+srv://{username}:{password}@cluster0.qhaksm0.mongodb.net/"
+    "?retryWrites=true&w=majority&appName=Cluster0",
+    tlsCAFile=certifi.where()
+)
 
 db_name = client["meter_data"]
 collection = db_name["daily_readings"]
-# [Rest of your application code...]
 
 # In-memory storage
 kvah_counter = 637000.0
@@ -42,7 +35,7 @@ async def generate_data_forever():
     global kvah_counter, latest_data, current_day_data, current_day
 
     while True:
-        wait_seconds = random.randint(60, 60)  # 1 to 10 minutes
+        wait_seconds = random.randint(60, 60)  # Fixed to 60 seconds (1 minute)
         await asyncio.sleep(wait_seconds)
 
         current_time = datetime.utcnow()
@@ -65,6 +58,7 @@ async def generate_data_forever():
             # Reset for new day
             current_day_data = []
             current_day = today
+            kvah_counter = 637000.0  # Reset counter or keep accumulating?
 
         # Generate new data
         kvah_counter += round(random.uniform(0.5, 5.0), 3)
@@ -93,7 +87,6 @@ async def generate_data_forever():
 
         # Add to current day's data
         current_day_data.append(latest_data.copy())
-        
 
 @app.on_event("startup")
 async def start_background():
@@ -106,27 +99,18 @@ def shutdown_db_client():
 @app.get("/live-meter-data")
 async def get_latest_data():
     """Returns the latest meter reading"""
+    if not latest_data:
+        raise HTTPException(status_code=404, detail="No data available yet")
     return latest_data
 
 @app.get("/")
 async def get_today_data():
     """Returns all readings from the current day"""
-    # If you want to store today's data when this endpoint is called:
-    if current_day_data:
-        try:
-            collection.insert_one({
-                "date": current_day.strftime("%Y-%m-%d"),
-                "readings": current_day_data,
-                "total_kvah": kvah_counter
-            })
-            print(f"Stored {len(current_day_data)} readings for {current_day}")
-        except Exception as e:
-            print("Failed to store data in MongoDB:", e)
-    
     return {
         "date": current_day.strftime("%Y-%m-%d"),
         "readings": current_day_data,
-        "count": len(current_day_data)
+        "count": len(current_day_data),
+        "total_kvah": kvah_counter
     }
 
 @app.get("/historical-data/{date}")
@@ -134,6 +118,8 @@ async def get_historical_data(date: str):
     """Retrieves stored data for a specific date (YYYY-MM-DD format)"""
     try:
         data = collection.find_one({"date": date}, {"_id": 0})
-        return data if data else {"message": "No data found for this date"}
+        if data is None:
+            raise HTTPException(status_code=404, detail="No data found for this date")
+        return data
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
