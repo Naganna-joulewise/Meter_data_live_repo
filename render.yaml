@@ -6,8 +6,12 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port=10000
     envVars:
-      - key: MONGODB_URI
-        value: mongodb+srv://kethavaram:Naganna890@@cluster0.gtaowbx.mongodb.net/meter_data?retryWrites=true&w=majority
-      - key: PYTHON_VERSION
-        value: 3.10  # Specify a Python version known to work well with SSL
+      - key: MONGODB_USERNAME
+        value: kethavaram
+      - key: MONGODB_PASSWORD
+        value: Naganna890@
+      - key: MONGODB_CLUSTER_URL
+        value: cluster0.gtaowbx.mongodb.net
+      - key: MONGODB_DB_NAME
+        value: meter_data
     autoDeploy: true

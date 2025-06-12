@@ -2,4 +2,3 @@ fastapi
 uvicorn
 pymongo[srv]
 python-dotenv
-certifi
