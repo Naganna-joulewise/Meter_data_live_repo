@@ -15,10 +15,13 @@ app = FastAPI()
 # username = quote_plus("kethavaram")
 # password = quote_plus("Naganna890@")
 # cluster_url = "cluster0.gtaowbx.mongodb.net"
+from urllib.parse import quote_plus
 
-password="Naganna890@"
+username = quote_plus("kethavaram")  # if it has special characters
+password = quote_plus("Naganna890@")  # safely encode special characters
 
-client=MongoClient(f"mongodb+srv://kethavaram:{password}@cluster0.gtaowbx.mongodb.net/")
+uri = f"mongodb+srv://{username}:{password}@cluster0.gtaowbx.mongodb.net/"
+client = MongoClient(uri)
 
 db_name = client["meter_data"]
 collection = db_name["daily_readings"]
