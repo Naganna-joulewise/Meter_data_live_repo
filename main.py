@@ -1,13 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from datetime import datetime, timedelta
 import random
 import asyncio
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
+from pymongo.errors import ConnectionFailure, PyMongoError
 import os
-from typing import List, Dict
+from typing import List, Dict, Optional
 from urllib.parse import quote_plus
-import certifi  # Add this import
+import certifi
+import ssl
 
 app = FastAPI()
 
@@ -17,30 +18,65 @@ password = quote_plus("Naganna890@")
 cluster_url = "cluster0.gtaowbx.mongodb.net"
 db_name = "meter_data"
 
-MONGO_URI = f"mongodb+srv://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority&tls=true&tlsCAFile={certifi.where()}"
-COLLECTION_NAME = "daily_readings"
+# Connection options with multiple fallbacks
+connection_options = [
+    {
+        "uri": f"mongodb+srv://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority",
+        "options": {
+            "tls": True,
+            "tlsCAFile": certifi.where(),
+            "tlsAllowInvalidCertificates": False,
+            "connectTimeoutMS": 30000,
+            "socketTimeoutMS": 30000,
+            "serverSelectionTimeoutMS": 30000,
+            "retryWrites": True,
+            "w": "majority"
+        }
+    },
+    {
+        "uri": f"mongodb+srv://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority",
+        "options": {
+            "tls": True,
+            "tlsAllowInvalidCertificates": True,  # Fallback with less strict SSL
+            "connectTimeoutMS": 30000,
+            "socketTimeoutMS": 30000,
+            "serverSelectionTimeoutMS": 30000
+        }
+    },
+    {
+        "uri": f"mongodb://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority",
+        "options": {
+            "ssl": True,
+            "ssl_cert_reqs": ssl.CERT_NONE,  # Most permissive fallback
+            "connectTimeoutMS": 30000,
+            "socketTimeoutMS": 30000
+        }
+    }
+]
 
-# Initialize MongoDB client with SSL verification
-try:
-    client = MongoClient(
-        MONGO_URI,
-        tls=True,
-        tlsCAFile=certifi.where(),
-        connectTimeoutMS=30000,
-        socketTimeoutMS=30000,
-        serverSelectionTimeoutMS=30000
-    )
-    db = client[db_name]
-    collection = db["daily_readings"]
-    # Test the connection
-    client.admin.command('ping')
-    print("Successfully connected to MongoDB!")
-except ConnectionFailure as e:
-    print("Could not connect to MongoDB:", e)
-    # Initialize with None to prevent further errors
-    client = None
-    db = None
-    collection = None
+# Initialize MongoDB client with connection fallbacks
+client = None
+db = None
+collection = None
+
+for attempt, config in enumerate(connection_options, 1):
+    try:
+        client = MongoClient(config["uri"], **config["options"])
+        db = client[db_name]
+        collection = db["daily_readings"]
+        # Test the connection
+        client.admin.command('ping')
+        print(f"Successfully connected to MongoDB with config {attempt}!")
+        break
+    except (ConnectionFailure, PyMongoError) as e:
+        print(f"Connection attempt {attempt} failed:", str(e))
+        if attempt == len(connection_options):
+            print("All connection attempts failed. Application will run without database support.")
+            client = None
+            db = None
+            collection = None
+
+# [Rest of your application code...]
 
 # In-memory storage
 kvah_counter = 637000.0
