@@ -6,34 +6,41 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
 import os
 from typing import List, Dict
-from urllib.parse import quote_plus  # Add this import
-
-
+from urllib.parse import quote_plus
+import certifi  # Add this import
 
 app = FastAPI()
 
-
-username = quote_plus("kethavaram")  # Encode username
-password = quote_plus("Naganna890@")  # Encode password
+# MongoDB configuration
+username = quote_plus("kethavaram")
+password = quote_plus("Naganna890@")
 cluster_url = "cluster0.gtaowbx.mongodb.net"
 db_name = "meter_data"
 
-MONGO_URI = f"mongodb+srv://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority"
-# MongoDB configuration
-# MONGO_URI = os.getenv("MONGODB_URI", "mongodb+srv://kethavaram:Naganna890@@cluster0.gtaowbx.mongodb.net/")
-# DB_NAME = "meter_data"
+MONGO_URI = f"mongodb+srv://{username}:{password}@{cluster_url}/{db_name}?retryWrites=true&w=majority&tls=true&tlsCAFile={certifi.where()}"
 COLLECTION_NAME = "daily_readings"
 
-# Initialize MongoDB client
-# Initialize MongoDB client
+# Initialize MongoDB client with SSL verification
 try:
-    client = MongoClient(MONGO_URI)
+    client = MongoClient(
+        MONGO_URI,
+        tls=True,
+        tlsCAFile=certifi.where(),
+        connectTimeoutMS=30000,
+        socketTimeoutMS=30000,
+        serverSelectionTimeoutMS=30000
+    )
     db = client[db_name]
     collection = db[COLLECTION_NAME]
-    client.admin.command('ping')  # Test connection
+    # Test the connection
+    client.admin.command('ping')
     print("Successfully connected to MongoDB!")
 except ConnectionFailure as e:
     print("Could not connect to MongoDB:", e)
+    # Initialize with None to prevent further errors
+    client = None
+    db = None
+    collection = None
 
 # In-memory storage
 kvah_counter = 637000.0
