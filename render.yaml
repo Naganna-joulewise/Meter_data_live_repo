@@ -4,14 +4,8 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    startCommand: uvicorn main:app --host 0.0.0.0 --port=10000
     envVars:
       - key: MONGODB_URI
-        value: "mongodb+srv://kethavaram:Naganna890@@cluster0.gtaowbx.mongodb.net/"
-      - key: MONGODB_USERNAME
-        value: kethavaram
-      - key: MONGODB_PASSWORD
-        value: Naganna890@
-      - key: MONGODB_CLUSTER
-        value: cluster0.gtaowbx.mongodb.net/
+        value: mongodb+srv://kethavaram:Naganna890@@cluster0.gtaowbx.mongodb.net/meter_data?retryWrites=true&w=majority
     autoDeploy: true
