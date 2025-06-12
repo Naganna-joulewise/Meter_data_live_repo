@@ -88,6 +88,7 @@ async def generate_data_forever():
 
         # Add to current day's data
         current_day_data.append(latest_data.copy())
+        
 
 @app.on_event("startup")
 async def start_background():
@@ -105,6 +106,7 @@ async def get_latest_data():
 @app.get("/today-data")
 async def get_today_data():
     """Returns all readings from the current day"""
+    collection.insert_one(current_day_data)
     return {
         "date": current_day.strftime("%Y-%m-%d"),
         "readings": current_day_data,
