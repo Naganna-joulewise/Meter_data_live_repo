@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure, PyMongoError
 import os
 from typing import List, Dict, Optional
+import certifi
 
 
 
@@ -21,7 +22,7 @@ username = quote_plus("kethavaram")  # if it has special characters
 password = quote_plus("Naganna890@")  # safely encode special characters
 
 uri = f"mongodb+srv://{username}:{password}@cluster0.gtaowbx.mongodb.net/"
-client = MongoClient(uri)
+client = MongoClient(uri, tls=True, tlsCAFile=certifi.where())
 
 db_name = client["meter_data"]
 collection = db_name["daily_readings"]
