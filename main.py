@@ -29,7 +29,7 @@ COLLECTION_NAME = "daily_readings"
 try:
     client = MongoClient(MONGO_URI)
     db = client[db_name]
-    collection = db["COLLECTION_NAME"]
+    collection = db[COLLECTION_NAME]
     client.admin.command('ping')  # Test connection
     print("Successfully connected to MongoDB!")
 except ConnectionFailure as e:
